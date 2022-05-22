@@ -8,7 +8,7 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-import customError
+import custom_error
 
 load_dotenv()
 
@@ -72,6 +72,15 @@ def get_api_answer(current_timestamp):
         raise requests.exceptions.RequestException(
             f'{text_error_get_api} {error}'
         )
+    if homework_statuses.status_code != HTTPStatus.OK:
+        logger.error(
+            f'{text_error_get_api} {homework_statuses.status_code}'
+        )
+        raise custom_error.IsNot200Error(
+            f'{text_error_get_api} {homework_statuses.status_code}'
+        )
+    try:
+        return homework_statuses.json()
     except json.JSONDecodeError as error:
         text_error_json = 'Ответ не преобразуется в json:'
         logger.error(
@@ -80,14 +89,6 @@ def get_api_answer(current_timestamp):
         raise json.JSONDecodeError(
             f'{text_error_json} {error}'
         )
-    if homework_statuses.status_code != HTTPStatus.OK:
-        logger.error(
-            f'{text_error_get_api} {homework_statuses.status_code}'
-        )
-        raise customError.IsNot200Error(
-            f'{text_error_get_api} {homework_statuses.status_code}'
-        )
-    return homework_statuses.json()
 
 
 def check_response(response):
@@ -97,19 +98,19 @@ def check_response(response):
     except KeyError as error:
         text_key_error = 'Отсутствует ключ "homeworks" в response:'
         logger.error(f'{text_key_error} {error}')
-        raise customError.HomeworksKeyError(f'{text_key_error} {error}')
+        raise custom_error.HomeworksKeyError(f'{text_key_error} {error}')
     if not isinstance(response, dict):
-        raise customError.NotDictTypeError(
+        raise custom_error.NotDictTypeError(
             f'Объект response должен быть dict, а получено: {type(response)}'
         )
     if not isinstance(homeworks, list):
-        raise customError.NotListTypeError(
+        raise custom_error.NotListTypeError(
             f'Формат "homework" должен быть list, а получено: '
             f'{type(homeworks)}'
         )
     if len(homeworks) == 0:
         logger.error = 'Актуальных работ нет.'
-        raise customError.ZeroHomeworksError(
+        raise custom_error.ZeroHomeworksError(
             f'Актуальных работ нет, список пуст: {homeworks}'
         )
     return homeworks
@@ -122,7 +123,7 @@ def parse_status(homework):
     except KeyError as error:
         text_error_key_hw_name = 'Отсутствует ключ "homework_name" в response:'
         logger.error(f'{text_error_key_hw_name} {error}')
-        raise customError.HomeworkNameKeyError(
+        raise custom_error.HomeworkNameKeyError(
             f'{text_error_key_hw_name} {error}'
         )
     try:
@@ -130,11 +131,11 @@ def parse_status(homework):
     except KeyError as error:
         text_error_key_status = 'Отсутствует ключ "status" в response:'
         logger.error(f'{text_error_key_status} {error}')
-        raise customError.StatusKeyError(f'{text_error_key_status} {error}')
+        raise custom_error.StatusKeyError(f'{text_error_key_status} {error}')
     if homework_status not in HOMEWORK_STATUSES:
         text_error_status = 'Недокументированный статус домашней работы:'
         logger.error(f'{text_error_status} {homework_status}')
-        raise customError.NotStatusError(
+        raise custom_error.NotStatusError(
             f'{text_error_status} {homework_status}'
         )
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -171,7 +172,7 @@ def main():
         else:
             text_not_new_status = 'В ответе отсутствуют новые статусы.'
             logger.debug(text_not_new_status)
-            raise customError.NotNewStatusError(text_not_new_status)
+            raise custom_error.NotNewStatusError(text_not_new_status)
 
 
 if __name__ == '__main__':
