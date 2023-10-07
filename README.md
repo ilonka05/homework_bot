@@ -43,7 +43,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-- В корневой папке проекта создайте файл .env, пример содержания файла:
+- В корневой папке проекта создайте файл .env. Пример содержания файла:
 
 ```
 PRACTICUM_TOKEN=" "
@@ -58,6 +58,8 @@ TELEGRAM_CHAT_ID=" "
 ```
 python homework.py
 ```
+
+---
 
 ### Авторы проекта:
 
